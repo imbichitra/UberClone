@@ -60,6 +60,7 @@ class _MapState extends State<Map> {
           compassEnabled: true,
           markers: _markers,
           onCameraMove: _onCameraMove,
+          polylines: _polyLines,
         ),
 
         Positioned(
@@ -124,7 +125,7 @@ class _MapState extends State<Map> {
               controller: destinationController,
               textInputAction: TextInputAction.go,
               onSubmitted: (value) {
-                //appState.sendRequest(value);
+                sendRequest(value);
               },
               decoration: InputDecoration(
                 icon: Container(
@@ -168,12 +169,26 @@ class _MapState extends State<Map> {
     });
   }
 
-  void _onAddMarkerPressed() {
+  void createRoute(String encondedPoly){
+    setState(() {
+      _polyLines.add(
+        Polyline(polylineId: PolylineId(_lastPosition.toString()),
+        width: 10,
+        points: _convertToLatLng(_decodePoly(encondedPoly)),
+        color: Colors.blue,
+        )
+      );
+    });
+  }
+
+  void _addMarker(LatLng location, String address) {
     setState(() {
       _markers.add(Marker(
           markerId: MarkerId(_lastPosition.toString()),
-          position: _lastPosition,
-          infoWindow: InfoWindow(title: "remember here", snippet: "good place"),
+          position: location,
+          infoWindow: InfoWindow(
+            title: address,
+            snippet: "go here"),
           icon: BitmapDescriptor.defaultMarker));
     });
   }
@@ -182,7 +197,7 @@ class _MapState extends State<Map> {
   *[12.12,13.13,133.3,33131]
   */
   //this method will convert list of double into latlng
-  List<LatLng> convertToLatLng(List points){
+  List<LatLng> _convertToLatLng(List points){
     List<LatLng> result = <LatLng>[];
     for(int i=0;i<points.length;i++){
       if(i%2 != 0){ //getting lat lng from array
@@ -233,5 +248,15 @@ class _MapState extends State<Map> {
       _initialPosition = LatLng(position.latitude,position.longitude);
       locationController.text = plaemark[0].name;
     });
+  }
+
+  void sendRequest(String intendLocation) async{
+    List<Placemark> plaemark = await Geolocator().placemarkFromAddress(intendLocation);
+    double latitude = plaemark[0].position.latitude;
+    double longitude = plaemark[0].position.longitude;
+    LatLng destination = LatLng(latitude,longitude);
+    _addMarker(destination,intendLocation);
+    String route = await _googleMapsServices.getRouteCoordinate(_initialPosition, destination);
+    createRoute(route);
   }
 }
