@@ -30,6 +30,9 @@ dependencies:
   google_maps_flutter: ^0.5.30
   geoflutterfire: ^2.1.0
   location: ^3.0.2
+  google_maps_webservice: ^0.0.18
+  geolocator: any
+  http: ^0.12.2
   uuid: ^2.2.0
 
   # The following adds the Cupertino Icons font to your application.
