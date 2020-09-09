@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:uberclone/components/map_pin_pill.dart';
+import 'package:uberclone/models/pin_pill_info.dart';
 import 'package:uberclone/requests/google_maps_request.dart';
 
 class Home extends StatefulWidget {
@@ -41,23 +43,29 @@ class _MapsState extends State<Maps> {
 
   BitmapDescriptor pinLocationIcon;
 
+  double pinPillPosition = -100;
+  PinInformation currentlySelectedPin = PinInformation(
+      pinPath: '',
+      avatarPath: '',
+      location: LatLng(0, 0),
+      locationName: '',
+      labelColor: Colors.grey);
+  PinInformation sourcePinInfo;
+  PinInformation destinationPinInfo;
+
   @override
   void initState() {
     super.initState();
+    createImage();
   }
 
-  createImage(context){
-    ImageConfiguration configuration = createLocalImageConfiguration(context);
-    BitmapDescriptor.fromAssetImage(configuration, 'asswts/logo.png')
-    .then((value) => {
-      setState((){
-        pinLocationIcon = value;
-      })
-    });
+  createImage() async {
+    pinLocationIcon = await BitmapDescriptor.fromAssetImage(
+        ImageConfiguration(devicePixelRatio: 2.5), 'assets/car.png');
   }
+
   @override
   Widget build(BuildContext context) {
-    createImage(context);
     return Container(
       child: Stack(
         children: <Widget>[
@@ -69,6 +77,11 @@ class _MapsState extends State<Maps> {
             myLocationEnabled: true,
             mapType: MapType.normal,
             polylines: _polyLines,
+            onTap: (LatLng location) {
+                setState(() {
+                  pinPillPosition = -100;
+                });
+              },
             onCameraMove: (CameraPosition position) async {
               if (_markers.length > 0) {
                 // MarkerId markerId = MarkerId(_markerIdVal());
@@ -84,6 +97,9 @@ class _MapsState extends State<Maps> {
               }
             },
           ),
+          MapPinPillComponent(
+              pinPillPosition: pinPillPosition,
+              currentlySelectedPin: currentlySelectedPin),
           Positioned(
             top: 40,
             right: 20,
@@ -109,9 +125,23 @@ class _MapsState extends State<Maps> {
       Marker marker = Marker(
         markerId: markerId,
         position: position,
-        //icon: pinLocationIcon,
-        draggable: false,
+        onTap: () {
+          setState(() {
+            currentlySelectedPin = sourcePinInfo;
+            pinPillPosition = 0;
+          });
+        },
+        icon: pinLocationIcon,
+        //draggable: false,
       );
+
+      sourcePinInfo = PinInformation(
+          locationName: "Start Location",
+          location: position,
+          pinPath: "assets/car.png",
+          avatarPath: "assets/cr.png",
+          labelColor: Colors.blueAccent);
+
       setState(() {
         _markers[markerId] = marker;
       });
@@ -123,7 +153,6 @@ class _MapsState extends State<Maps> {
             CameraPosition(
               target: position,
               zoom: 17.0,
-              
             ),
           ),
         );
@@ -205,7 +234,7 @@ class _MapsState extends State<Maps> {
   }
 
   Future<void> updateMarkerPosition() async {
-    for (int i = 0; i < result.length-1; i++) {
+    for (int i = 0; i < result.length - 1; i++) {
       MarkerId markerId = MarkerId(_markerIdVal());
       Marker marker = _markers[markerId];
 
@@ -227,9 +256,6 @@ class _MapsState extends State<Maps> {
       setState(() {
         _markers[markerId] = updatedMarker;
       });
-
-      
-      
     }
   }
 }
