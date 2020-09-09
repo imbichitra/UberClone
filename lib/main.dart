@@ -22,7 +22,8 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: Home(title: 'Map',)//MyHomePage(title: 'Uber clone'),
+      home: Home(title: 'Map',)
+      //home:MyHomePage(title: 'Uber clone'),
     );
   }
 }
