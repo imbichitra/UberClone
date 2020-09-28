@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:uberclone/screens/home.dart';
 import 'package:uberclone/screens/map.dart';
+import 'package:uberclone/screens/map_marker_animation.dart';
 import 'package:uberclone/states/app_state.dart';
 
 void main() {
@@ -22,8 +23,9 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: Home(title: 'Map',)
+      //home: Home(title: 'Map',)
       //home:MyHomePage(title: 'Uber clone'),
+      home: AnimateMarker(),
     );
   }
 }
